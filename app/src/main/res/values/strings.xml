@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">QIWI-Users-Balances</string>
+    <string name="excheng">Excheng</string>
+    <string name="users_id">Users Id</string>
+    <string name="users_name">Users Name</string>
+    <string name="users_balance">Users balance</string>
+    <string name="attention">Attention!</string>
+    <string name="repeat">Repeat</string>
+    <string name="continue_without_repetition">Continue without repetition</string>
+    <string name="query_result_is_empty">The query result is empty</string>
+    <string name="db_cursor_is_null">DB cursor is null</string>
+    <string name="response_is_null">Response is nul</string>
+    <string name="responses_body_is_null">Responses body is null</string>
+    <string name="responses_body_is_empty">Responses body is empty</string>
+    <string name="to_abort">To abort, close the application</string>
+    <string name="error_loading_response_in_db">Error loading response in DB:</string>
+    <string name="error_loading_response_from_uri">Error loading response from URI:</string>
+    <string name="error_when_updating_database">Error when updating database:</string>
+    <string name="error_restoring_db_from_backup">Error restoring DB from backup:</string>
+    <string name="error_while_backing_up_database">Error while backing up database:</string>
+    <string name="error_when_copying_data">Error when copying data:</string>
+    <string name="result_code">Result code:</string>
+    <string name="message">message:</string>
+    <string name="the_response_is_null">The response is null</string>
+    <string name="error_when_writing_data_from_the_response_db">Error when writing data from the response DB:</string>
+    <string name="the_database_is_not_deleted">The database is not deleted</string>
+    <string name="close_application">Close application</string>
+    <string name="to_rename_an_existing_database_is_prohibited">To rename an existing database is prohibited</string>
+    <string name="create_list_of_qiwis_users_is_not_performed">Create list of qiwis users is not performed</string>
+    <string name="the_dataset_is_null">The dataset is null</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="please_wait_loading">Please wait, loading.</string>
+
+</resources>
