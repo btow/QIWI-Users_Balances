@@ -6,9 +6,9 @@ import com.arellomobile.mvp.MvpView;
 
 public interface RecyclerListView extends MvpView {
 
-    public void showProgressBar(Bundle args);
+    public void showLoadFrag(Bundle args);
 
-    public void showMsg(Bundle args);
+    public void showMsgFrag(Bundle args);
 
     public void showUsersBalances(final int userId);
 }

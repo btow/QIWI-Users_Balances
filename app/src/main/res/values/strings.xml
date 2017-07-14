@@ -31,5 +31,10 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="please_wait_loading">Please wait, loading.</string>
+    <string name="error_in_the_constructor_main_presenter">Error in the constructor MainPresenter:</string>
+    <string name="error_in_the_method_on_create_view_of_service_fragment">Error in the method onCreateView() of ServiceFragment:</string>
+    <string name="error_in_the_method_on_create_of_main_activity">Error in the method onCreate() of MainActivity:</string>
+    <string name="error_in_the_method_show_users_balances_of_recycler_list_fragment">Error in the method showUsersBalances() of RecyclerListFragment:</string>
+    <string name="error_in_the_method_on_click_msg_btn_of_service_presenter">Error in the method onClickMsgBtn() of ServicePresenter:</string>
 
 </resources>

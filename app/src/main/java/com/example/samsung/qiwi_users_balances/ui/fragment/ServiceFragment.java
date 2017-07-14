@@ -1,7 +1,6 @@
 package com.example.samsung.qiwi_users_balances.ui.fragment;
 
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -11,6 +10,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.arellomobile.mvp.MvpAppCompatFragment;
 import com.arellomobile.mvp.presenter.InjectPresenter;
@@ -18,9 +18,10 @@ import com.example.samsung.qiwi_users_balances.R;
 import com.example.samsung.qiwi_users_balances.model.App;
 import com.example.samsung.qiwi_users_balances.presentation.presenter.ServicePresenter;
 import com.example.samsung.qiwi_users_balances.presentation.view.ServiceView;
-import com.example.samsung.qiwi_users_balances.ui.activity.main.MainActivity;
 import com.example.samsung.qiwi_users_balances.ui.fragment.recycler.RecyclerListFragment;
 
+import java.io.IOError;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class ServiceFragment extends MvpAppCompatFragment implements ServiceView {
@@ -48,17 +49,16 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        String tMsg = App.getApp().getString(R.string.error_in_the_method_on_create_view_of_service_fragment);
+        int servicesVersion = getArguments().getInt(App.SERV_VERSION);
+        int layoutsNumber = getArguments().getInt(App.FRAG_LAY_NUMBER, R.id.flPrimFragment);
         // Inflate the layout for this fragment
-        return inflater.inflate(getArguments().getInt(App.SERV_VERSION), container, false);
-    }
+        View fragmentService = inflater.inflate(servicesVersion, container, false);
 
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        if (servicesVersion == App.SERV_VERSION_LOAD_FRAG) {
 
-        if (getArguments().getInt(App.SERV_VERSION) == App.SERV_VERSION_LOAD_FRAG) {
-
-            pbLoading = (ProgressBar) view.findViewById(R.id.pbLoading);
+            pbLoading = (ProgressBar) fragmentService.findViewById(R.id.pbLoading);
             pbLoading.setIndeterminate(true);
 
             if (getArguments().containsKey(App.USER_ID)) {
@@ -66,7 +66,24 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
                 mServicePresenter.createListQiwiUsersBalances(
                         getArguments().getInt(App.USER_ID, 0)
                 );
-                App.setUsedPrimFragmentsVersion(App.BALANCES_FRAGMENT);
+
+                if (layoutsNumber == R.id.flPrimFragment) {
+                    try {
+                        App.setNextPrimUsedFragmentsNumber(App.MESSAGE_FRAGMENT_NUMBER);
+                    } catch (IllegalArgumentException e) {
+                        tMsg += (" " + e.getMessage());
+                        Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
+                        throw new IOError(e);
+                    }
+                } else {
+                    try {
+                        App.setNextSecondUsedFragmentsNumber(App.MESSAGE_FRAGMENT_NUMBER);
+                    } catch (IllegalArgumentException e) {
+                        tMsg += (" " + e.getMessage());
+                        Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
+                        throw new IOError(e);
+                    }
+                }
             } else {
 
                 do {
@@ -76,25 +93,37 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
                         e.printStackTrace();
                     }
                 } while (!App.getQiwiUsersListCreated());
-                App.setUsedPrimFragmentsVersion(App.USERS_FRAMENT);
+                try {
+                    App.setNextPrimUsedFragmentsNumber(App.MESSAGE_FRAGMENT_NUMBER);
+                } catch (IllegalArgumentException e) {
+                    tMsg += (" " + e.getMessage());
+                    Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
+                    throw new IOError(e);
+                }
             }
 
-        } else if (getArguments().getInt(App.SERV_VERSION) == App.SERV_VERSION_MESS_FRAG) {
+        } else if (servicesVersion == App.SERV_VERSION_MESS_FRAG) {
 
-            llMsg = (LinearLayout) view.findViewById(R.id.llMsg);
+            llMsg = (LinearLayout) fragmentService.findViewById(R.id.llMsg);
             llMsg.setVisibility(LinearLayout.VISIBLE);
-            tvMsg = (TextView) view.findViewById(R.id.tvMsg);
-            btnRepeat = (Button) view.findViewById(R.id.btnRepeat);
-            btnRepeat.setOnClickListener(mServicePresenter.onClickRepeat(view));
-            btnContinue = (Button) view.findViewById(R.id.btnContinue);
-            btnContinue.setOnClickListener(mServicePresenter.onClickRepeat(view));
+            tvMsg = (TextView) fragmentService.findViewById(R.id.tvMsg);
+            btnRepeat = (Button) fragmentService.findViewById(R.id.btnRepeat);
+            btnRepeat.setOnClickListener(mServicePresenter.onClickMsgBtn(fragmentService));
+            btnContinue = (Button) fragmentService.findViewById(R.id.btnContinue);
+            btnContinue.setOnClickListener(mServicePresenter.onClickMsgBtn(fragmentService));
 
             if (!App.getDequeMsg().isEmpty()) {
                 tvMsg.setText(App.getDequeMsg().outMsg());
-            } else {
-                showCallingScreen();
             }
         }
+
+        return fragmentService;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
     }
 
     @Override
@@ -106,8 +135,8 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
 
         switch (call_from) {
 
-            case App.CALL_FROM_PRIM_FRAGMENT:
-            case App.CALL_FROM_BTN_PRIM_FRAG:
+            case App.CALL_FROM_USERS_LIST:
+            case App.CALL_FROM_BTN_USERS_LIST:
 
                 users = null;
                 try {
@@ -120,8 +149,8 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
                 }
                 App.getFragmentManager().beginTransaction().replace(R.id.flPrimFragment, users).commit();
                 break;
-            case App.CALL_FROM_SECOND_FRAGMENT:
-            case App.CALL_FROM_BTN_SEC_FRAG:
+            case App.CALL_FROM_BALANCES_LIST:
+            case App.CALL_FROM_BTN_BALANCES_LIST:
 
                 RecyclerListFragment balances = null;
                 try {

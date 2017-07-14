@@ -10,7 +10,7 @@ public interface MainView extends MvpView {
 
     public void showBalancesFragment(final Bundle args);
 
-    public void showProgressBar(final Bundle args);
+    public void showLoadingFragment(final Bundle args);
 
     public void showMessageFragment(final Bundle args);
 

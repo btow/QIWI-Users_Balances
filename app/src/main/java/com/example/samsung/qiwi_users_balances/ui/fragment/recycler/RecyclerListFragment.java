@@ -21,6 +21,8 @@ import com.example.samsung.qiwi_users_balances.presentation.presenter.recycler.R
 import com.example.samsung.qiwi_users_balances.presentation.view.recycler.RecyclerListView;
 import com.example.samsung.qiwi_users_balances.ui.fragment.ServiceFragment;
 
+import java.io.IOError;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -45,13 +47,28 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
         @Override
         public void onClick(View view) {
 
-            Bundle args = new Bundle();
-            args.putInt(App.CALL_FROM, App.CALL_FROM_BTN_PRIM_FRAG);
-            args.putInt(App.FRAG_NUMBER, R.id.flPrimFragment);
+            Bundle args = getArguments();
+
+            if (args.size() == 0) {
+
+                args.putInt(App.CALL_FROM, App.CALL_FROM_USERS_LIST);
+                args.putInt(App.FRAG_LAY_NUMBER, R.id.flPrimFragment);
+            } else {
+
+                args.putInt(App.CALL_FROM, App.CALL_FROM_BALANCES_LIST);
+
+                if (App.getUsedTwoFragmentLayout()) {
+
+                    args.putInt(App.FRAG_LAY_NUMBER, R.id.flSecFragment);
+                } else {
+
+                    args.putInt(App.FRAG_LAY_NUMBER, R.id.flPrimFragment);
+                }
+            }
             args.putInt(App.SERV_VERSION, App.SERV_VERSION_LOAD_FRAG);
 
             try {
-                mRecyclerListPresenter.onClicExcheng();
+                mRecyclerListPresenter.onClicExcheng(args);
             } catch (DBIsNotDeletedException | DBCursorIsNullException e) {
                 e.printStackTrace();
                 App.getDequeMsg().pushMsg(e.getMessage());
@@ -60,7 +77,7 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
                 App.getDequeMsg().pushMsg(e2.getMessage());
             }
             args.putInt(App.SERV_VERSION, App.SERV_VERSION_MESS_FRAG);
-            showMsg(args);
+            showMsgFrag(args);
             rvUsers.getAdapter().notifyDataSetChanged();
         }
     };
@@ -96,18 +113,9 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                              final Bundle savedInstanceState) {
 
-        return inflater.inflate(R.layout.fragment_recycler_list, container, false);
-    }
+        View fragmentRecyclerList = inflater.inflate(R.layout.fragment_recycler_list, container, false);
 
-    @Override
-    public void onViewCreated(final View view, final Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        if (savedInstanceState != null) {
-            mUserID = savedInstanceState.getInt(App.USER_ID, 0);
-        }
-
-        ButterKnife.bind(this, view);
+        ButterKnife.bind(this, fragmentRecyclerList);
 
         rvUsers.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -142,9 +150,9 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
                     Bundle args = new Bundle();
                     App.setCurUserID(mUserID);
                     args.putInt(App.USER_ID, App.getCurUserID());
-                    args.putInt(App.FRAG_NUMBER, flPrimFragment);
-                    args.putInt(App.CALL_FROM, App.CALL_FROM_PRIM_FRAGMENT);
-                    showProgressBar(args);
+                    args.putInt(App.FRAG_LAY_NUMBER, flPrimFragment);
+                    args.putInt(App.CALL_FROM, App.CALL_FROM_USERS_LIST);
+                    showLoadFrag(args);
                     //Обновить экран
                     showUsersBalances(mUserID);
                 }
@@ -153,8 +161,21 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
             rvUsers.setHasFixedSize(true); //Фиксируем размер списка
         }
 
-
         btnExcheng.setOnClickListener(mOnClickListener);
+
+        return fragmentRecyclerList;
+    }
+
+    @Override
+    public void onViewCreated(final View view, final Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        if (savedInstanceState != null) {
+            mUserID = savedInstanceState.getInt(App.USER_ID, 0);
+            App.setCurUserID(mUserID);
+        }
+
+//        ButterKnife.bind(this, view);
 
 //        if (mDualPlane) {
 //            showUsersBalances(mUserID);
@@ -162,31 +183,25 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
     }
 
     @Override
-    public void showProgressBar(Bundle args) {
+    public void showLoadFrag(Bundle args) {
 
-        args.putInt(App.SERV_VERSION, App.SERV_VERSION_LOAD_FRAG);
         openServiceFragment(args);
     }
 
     @Override
-    public void showMsg(Bundle args) {
+    public void showMsgFrag(Bundle args) {
 
         if (App.getDequeMsg().isEmpty()) {
             return;
         } else {
-            args.putInt(App.SERV_VERSION, App.SERV_VERSION_MESS_FRAG);
             openServiceFragment(args);
         }
     }
 
     private void openServiceFragment(Bundle args) {
 
-        int fragmentsVersion = R.id.flPrimFragment;
-
-        if (args.getInt(App.CALL_FROM) == App.CALL_FROM_BTN_SEC_FRAG) {
-
-            fragmentsVersion = R.id.flSecFragment;
-        }
+        // Могут быть значения SERV_VERSION_MESS_FRAG или SERV_VERSION_LOAD_FRAG
+        int fragmentsVersion = args.getInt(App.SERV_VERSION);
 
         ServiceFragment serviceFragment = null;
         try {
@@ -198,34 +213,50 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
 
             serviceFragment = ServiceFragment.newInstance(args);
         }
-        App.setUsedPrimFragmentsVersion(App.MESSAGE_FRAGMENT);
-        args.putInt(App.SERV_VERSION, App.SERV_VERSION_MESS_FRAG);
         App.getFragmentManager().beginTransaction().replace(fragmentsVersion, serviceFragment).commit();
     }
 
     @Override
     public void showUsersBalances(int userId) {
 
-        mUserID = userId;
+        String tMsg = App.getApp().getString(
+                R.string.error_in_the_method_show_users_balances_of_recycler_list_fragment)
+                ;
 
-//        if (mDualPlane) {
-//        } else {
-            App.setUsedPrimFragmentsVersion(App.BALANCES_FRAGMENT);
+        if (mUserID != userId) {
+            throw new IOError(
+                    new IllegalArgumentException(
+                    tMsg += "The values \"mUsweID\" != \"userId\": " + mUserID + " != " + userId
+                    )
+            );
+        } else if (mUserID != App.getCurUserID()) {
+            throw new IOError(
+                    new IllegalArgumentException(
+                            tMsg += "The values \"mUsweID\" != \"mCurUserID\": " + mUserID + " != " + App.getCurUserID()
+                    )
+            );
+        }
 
-            int fragmentsVersion = R.id.flPrimFragment;
+        int fragmentsVersion = getArguments().getInt(App.FRAG_LAY_NUMBER,  R.id.flPrimFragment);
 
-            RecyclerListFragment recyclerListFragment = null;
-            try {
-                recyclerListFragment = (RecyclerListFragment) App.getFragmentManager().findFragmentById(fragmentsVersion);
-            } catch (ClassCastException e) {
-                e.printStackTrace();
-            }
-            if (recyclerListFragment == null) {
+        try {
+            App.setNextPrimUsedFragmentsNumber(App.BALANCES_FRAGMENT_NUMBER);
+        } catch (IllegalArgumentException e) {
+            tMsg += (" " + e.getMessage());
+            Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
+            throw new IOError(e);
+        }
+        RecyclerListFragment recyclerListFragment = null;
+        try {
+            recyclerListFragment = (RecyclerListFragment) App.getFragmentManager().findFragmentById(fragmentsVersion);
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+        }
+        if (recyclerListFragment == null) {
 
-                recyclerListFragment = RecyclerListFragment.newInstance(userId);
-            }
-            App.getFragmentManager().beginTransaction().replace(fragmentsVersion, recyclerListFragment).commit();
-//        }
+            recyclerListFragment = RecyclerListFragment.newInstance(userId);
+        }
+        App.getFragmentManager().beginTransaction().replace(fragmentsVersion, recyclerListFragment).commit();
     }
 
     @Override

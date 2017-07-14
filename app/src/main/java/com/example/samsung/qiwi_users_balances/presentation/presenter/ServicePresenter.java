@@ -18,12 +18,12 @@ import com.example.samsung.qiwi_users_balances.model.JsonQiwisUsers;
 import com.example.samsung.qiwi_users_balances.model.JsonQiwisUsersBalances;
 import com.example.samsung.qiwi_users_balances.model.QiwiUsers;
 import com.example.samsung.qiwi_users_balances.model.QiwiUsersBalances;
-import com.example.samsung.qiwi_users_balances.model.QiwisUsersAPI;
 import com.example.samsung.qiwi_users_balances.model.exceptions.CreateListQiwiUsersException;
 import com.example.samsung.qiwi_users_balances.model.exceptions.DBCursorIsNullException;
 import com.example.samsung.qiwi_users_balances.model.exceptions.DBIsNotDeletedException;
 import com.example.samsung.qiwi_users_balances.presentation.view.ServiceView;
 
+import java.io.IOError;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,19 +53,19 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
 
                 switch (mArgs.getInt(App.CALL_FROM)) {
 
-                    case App.CALL_FROM_PRIM_FRAGMENT:
+                    case App.CALL_FROM_USERS_LIST:
                         mLoadingUsersTask = new LoadingUsersTask();
                         mLoadingUsersTask.execute();
                         break;
-                    case App.CALL_FROM_SECOND_FRAGMENT:
+                    case App.CALL_FROM_BALANCES_LIST:
                         mLoadingBalancesTask = new LoadingBalancesTask();
                         mLoadingBalancesTask.execute();
                         break;
-                    case App.CALL_FROM_BTN_PRIM_FRAG:
+                    case App.CALL_FROM_BTN_USERS_LIST:
                         mExchangeUsersTask = new ExchangeUsersTask();
                         mExchangeUsersTask.execute();
                         break;
-                    case App.CALL_FROM_BTN_SEC_FRAG:
+                    case App.CALL_FROM_BTN_BALANCES_LIST:
                         mExchangeBalancesTask = new ExchangeBalancesTask();
                         mExchangeBalancesTask.execute();
                         break;
@@ -147,26 +147,78 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
         return qiwiUsersList;
     }
 
-    public View.OnClickListener onClickRepeat(View view) {
+    public View.OnClickListener onClickMsgBtn(View view) {
 
         View.OnClickListener onClickListener = new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
 
+                String tMsg = App.getApp().getString(R.string.error_in_the_method_on_click_msg_btn_of_service_presenter);
+
+                int fragmentsNumber = App.getServicesArguments().getInt(App.FRAG_LAY_NUMBER, R.id.flPrimFragment);
+                int callFrom = App.getServicesArguments().getInt(App.CALL_FROM, App.CALL_FROM_USERS_LIST);
+
                 switch (v.getId()) {
 
                     case R.id.btnRepeat:
 
                         if (App.getDequeMsg().isEmpty()) {
-                            App.setUsedPrimFragmentsVersion(App.LOADING_FRAGMENT);
+
+                            if (fragmentsNumber == R.id.flPrimFragment) {
+
+                                try {
+                                    App.setNextPrimUsedFragmentsNumber(App.LOADING_FRAGMENT_NUMBER);
+                                } catch (IllegalArgumentException e) {
+                                    tMsg += (" " + e.getMessage());
+                                    Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
+                                    throw new IOError(e);
+                                }
+                            } else {
+
+                                try {
+                                    App.setNextSecondUsedFragmentsNumber(App.LOADING_FRAGMENT_NUMBER);
+                                } catch (IllegalArgumentException e) {
+                                    tMsg += (" " + e.getMessage());
+                                    Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
+                                    throw new IOError(e);
+                                }
+                            }
                             getViewState().showCallingScreen();
                         } else {
                             getViewState().showNewMsg();
                         }
                         break;
                     case R.id.btnContinue:
-                        App.setUsedPrimFragmentsVersion(App.USERS_FRAMENT);
+
+                        if (fragmentsNumber == R.id.flSecFragment) {
+
+                            try {
+                                App.setNextSecondUsedFragmentsNumber(App.BALANCES_FRAGMENT_NUMBER);
+                            } catch (IllegalArgumentException e) {
+                                tMsg += (" " + e.getMessage());
+                                Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
+                                throw new IOError(e);
+                            }
+                        } else if (callFrom == App.CALL_FROM_USERS_LIST){
+
+                            try {
+                                App.setNextPrimUsedFragmentsNumber(App.USERS_FRAGMENT_NUMBER);
+                            } catch (IllegalArgumentException e) {
+                                tMsg += (" " + e.getMessage());
+                                Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
+                                throw new IOError(e);
+                            }
+                        } else {
+
+                            try {
+                                App.setNextPrimUsedFragmentsNumber(App.BALANCES_FRAGMENT_NUMBER);
+                            } catch (IllegalArgumentException e) {
+                                tMsg += (" " + e.getMessage());
+                                Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
+                                throw new IOError(e);
+                            }
+                        }
                         getViewState().showCallingScreen();
                     default:
                         break;
@@ -176,17 +228,31 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
         return onClickListener;
     }
 
-    private void setUsedNumberFragmentVersion(final int fragmentVersion) {
+    /**
+     *
+     * @param fragmentVersion - может принимать значения:
+     *                        USERS_FRAGMENT_NUMBER = 0,
+     *                        BALANCES_FRAGMENT_NUMBER = 1,
+     *                        LOADING_FRAGMENT_NUMBER = 2,
+     *                        MESSAGE_FRAGMENT_NUMBER = 3.
+     */
+    private void setUsedFragmentVersion(final int fragmentVersion) {
 
         switch (mArgs.getInt(App.CALL_FROM)) {
 
-            case App.CALL_FROM_PRIM_FRAGMENT:
-            case App.CALL_FROM_BTN_PRIM_FRAG:
-                App.setUsedPrimFragmentsVersion(fragmentVersion);
+            case App.CALL_FROM_USERS_LIST:
+
+                App.setNextPrimUsedFragmentsNumber(fragmentVersion);
                 break;
-            case App.CALL_FROM_SECOND_FRAGMENT:
-            case App.CALL_FROM_BTN_SEC_FRAG:
-                App.setUsedSecondFragmentsVersion(fragmentVersion);
+            case App.CALL_FROM_BALANCES_LIST:
+
+                if (App.getUsedTwoFragmentLayout()) {
+
+                    App.setNextSecondUsedFragmentsNumber(fragmentVersion);
+                } else {
+
+                    App.setNextPrimUsedFragmentsNumber(fragmentVersion);
+                }
                 break;
             default:
                 break;
@@ -194,8 +260,6 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
     }
 
     public void createListQiwiUsersBalances(int userId) {
-
-        App.setCurUserID(userId);
 
         Response<JsonQiwisUsersBalances> response = null;
 
@@ -295,7 +359,7 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
             if (!aMsg.equals("")) {
                 Toast.makeText(App.getApp().getBaseContext(), aMsg, Toast.LENGTH_SHORT).show();
             }
-            setUsedNumberFragmentVersion(App.MESSAGE_FRAGMENT);
+            setUsedFragmentVersion(App.MESSAGE_FRAGMENT_NUMBER);
             getViewState().showCallingScreen();
         }
     }
@@ -368,7 +432,7 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
             if (!aMsg.equals("")) {
                 Toast.makeText(App.getApp().getBaseContext(), aMsg, Toast.LENGTH_SHORT).show();
             }
-            setUsedNumberFragmentVersion(App.MESSAGE_FRAGMENT);
+            setUsedFragmentVersion(App.MESSAGE_FRAGMENT_NUMBER);
             getViewState().showCallingScreen();
         }
     }
@@ -379,6 +443,7 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
         protected Void doInBackground(Void... params) {
 
             //onLoadBalancesDataset()
+            createListQiwiUsersBalances(App.getCurUserID());
 
             return null;
         }
@@ -386,7 +451,7 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            setUsedNumberFragmentVersion(App.MESSAGE_FRAGMENT);
+            setUsedFragmentVersion(App.MESSAGE_FRAGMENT_NUMBER);
             getViewState().showCallingScreen();
         }
     }
@@ -404,7 +469,7 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            setUsedNumberFragmentVersion(App.MESSAGE_FRAGMENT);
+            setUsedFragmentVersion(App.MESSAGE_FRAGMENT_NUMBER);
             getViewState().showCallingScreen();
         }
     }
@@ -425,10 +490,10 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
 
             if (App.getRecyclersArguments() == null) {
 
-                    setUsedNumberFragmentVersion(App.USERS_FRAMENT);
+                    setUsedFragmentVersion(App.USERS_FRAGMENT_NUMBER);
             } else {
 
-                setUsedNumberFragmentVersion(App.BALANCES_FRAGMENT);
+                setUsedFragmentVersion(App.BALANCES_FRAGMENT_NUMBER);
             }
             getViewState().showCallingScreen();
         }

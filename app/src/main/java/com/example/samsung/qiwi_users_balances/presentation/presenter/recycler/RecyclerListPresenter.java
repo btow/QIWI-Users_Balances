@@ -24,16 +24,14 @@ public class RecyclerListPresenter extends MvpPresenter<RecyclerListView> {
         return null;
     }
 
-    public void onClicExcheng() throws Exception {
+    public void onClicExcheng(Bundle args) throws Exception {
 
-        Bundle args = new Bundle();
-        args.putInt(App.CALL_FROM, App.CALL_FROM_BTN_PRIM_FRAG);
-        getViewState().showProgressBar(args);
+        getViewState().showLoadFrag(args);
     }
 
     public void showProgressBar(Bundle args) {
 
-        getViewState().showProgressBar(args);
+        getViewState().showLoadFrag(args);
     }
 
     public List<QiwiUsersBalances> getQiwiUsersBalancesListDataset() {

@@ -14,21 +14,24 @@ public class App extends Application {
 
     public static final String
             USER_ID = "user_id",
-            FRAG_NUMBER = "frag_number",
+            RECYCL_VERSION = "recycl_version",
             SERV_VERSION = "serv_version",
+            FRAG_LAY_NUMBER = "frag_lay_number",
+            FRAGMENT_NUMBER = "frag_lay_number",
             CALL_FROM = "call_from";
 
     public static final int
-            CALL_FROM_PRIM_FRAGMENT = 0,
-            CALL_FROM_SECOND_FRAGMENT = 1,
-            CALL_FROM_BTN_PRIM_FRAG = 2,
-            CALL_FROM_BTN_SEC_FRAG = 3,
             SERV_VERSION_LOAD_FRAG = R.layout.fragment_loading,
             SERV_VERSION_MESS_FRAG = R.layout.fragment_message,
-            USERS_FRAMENT = 4,
-            BALANCES_FRAGMENT = 5,
-            LOADING_FRAGMENT = 6,
-            MESSAGE_FRAGMENT = 7;
+            RECYCL_VERSION_FRAG = R.layout.fragment_recycler_list,
+            USERS_FRAGMENT_NUMBER = 0,
+            BALANCES_FRAGMENT_NUMBER = 1,
+            LOADING_FRAGMENT_NUMBER = 2,
+            MESSAGE_FRAGMENT_NUMBER = 3,
+            CALL_FROM_USERS_LIST = 4,
+            CALL_FROM_BALANCES_LIST = 5,
+            CALL_FROM_BTN_USERS_LIST = 6,
+            CALL_FROM_BTN_BALANCES_LIST = 7;
 
     private static App mApp;
     private static ManagerControllerDB mManagerControllerDB;
@@ -39,8 +42,8 @@ public class App extends Application {
     private static FragmentManager mFragmentManager;
     private static boolean mQiwiUsersListCreated;
     private static boolean mUsedTwoFragmentLayout;
-    private static int mUsedPrimFragmentsVersion;
-    private static int mUsedSecondFragmentsVersion;
+    private static int mNextPrimUsedFragmentsNumber;
+    private static int mNextSecondUsedFragmentsNumber;
     private static int mCurUserID;
     private static Bundle mServicesArguments;
     private static Bundle mRecyclersArguments;
@@ -100,20 +103,56 @@ public class App extends Application {
         mUsedTwoFragmentLayout = usedTwoFragmentLayout;
     }
 
-    public static int getUsedPrimFragmentsVersion() {
-        return mUsedPrimFragmentsVersion;
+    private static void validationParameterFragmentsNuber(int fragmentsNumber) throws IllegalArgumentException {
+
+        if (fragmentsNumber != USERS_FRAGMENT_NUMBER
+                || fragmentsNumber != BALANCES_FRAGMENT_NUMBER
+                || fragmentsNumber != LOADING_FRAGMENT_NUMBER
+                || fragmentsNumber != MESSAGE_FRAGMENT_NUMBER) {
+            throw new IllegalArgumentException("Attempt to pass an invalid parameter [" + fragmentsNumber);
+        }
     }
 
-    public static void setUsedPrimFragmentsVersion(final int fragmentsVersion) {
-        mUsedPrimFragmentsVersion = fragmentsVersion;
+    public static int getNextPrimUsedFragmentsNumber() {
+        return mNextPrimUsedFragmentsNumber;
     }
 
-    public static int getUsedSecondFragmentsVersion() {
-        return mUsedSecondFragmentsVersion;
+    /**
+     * @param nextPrimUsedFragmentsNumber - ожидается одно из возможных значений:
+     *                                    USERS_FRAGMENT_NUMBER = 0,
+     *                                    BALANCES_FRAGMENT_NUMBER = 1,
+     *                                    LOADING_FRAGMENT_NUMBER = 2,
+     *                                    MESSAGE_FRAGMENT_NUMBER = 3.
+     */
+    public static void setNextPrimUsedFragmentsNumber(final int nextPrimUsedFragmentsNumber) throws IllegalArgumentException {
+
+        try {
+            validationParameterFragmentsNuber(nextPrimUsedFragmentsNumber);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e.getMessage() + "] in the method setNextPrimUsedFragmentsNumber");
+        }
+        mNextPrimUsedFragmentsNumber = nextPrimUsedFragmentsNumber;
     }
 
-    public static void setUsedSecondFragmentsVersion(final int fragmentsVersion) {
-        mUsedSecondFragmentsVersion = fragmentsVersion;
+    public static int getNextSecondUsedFragmentsNumber() {
+        return mNextSecondUsedFragmentsNumber;
+    }
+
+    /**
+     * @param nextSecondUsedFragmentsNumber - ожидается одно из возможных значений:
+     *                                    USERS_FRAGMENT_NUMBER = 0,
+     *                                    BALANCES_FRAGMENT_NUMBER = 1,
+     *                                    LOADING_FRAGMENT_NUMBER = 2,
+     *                                    MESSAGE_FRAGMENT_NUMBER = 3.
+     */
+    public static void setNextSecondUsedFragmentsNumber(final int nextSecondUsedFragmentsNumber) throws IllegalArgumentException {
+
+        try {
+            validationParameterFragmentsNuber(nextSecondUsedFragmentsNumber);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e.getMessage() + "] in the method setNextPrimUsedFragmentsNumber");
+        }
+        mNextSecondUsedFragmentsNumber = nextSecondUsedFragmentsNumber;
     }
 
     public static Bundle getServicesArguments() {
