@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Response;
 
@@ -44,8 +45,12 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
     private Bundle mArgs;
 
     public ServicePresenter() {
+        super();
+    }
 
-        mArgs= App.getServicesArguments();
+    public void serviceExecute(Bundle args) throws InterruptedException {
+
+        mArgs = args;
 
         switch (mArgs.getInt(App.SERV_VERSION)) {
 
@@ -54,33 +59,81 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
                 switch (mArgs.getInt(App.CALL_FROM)) {
 
                     case App.CALL_FROM_USERS_LIST:
-                        mLoadingUsersTask = new LoadingUsersTask();
-                        mLoadingUsersTask.execute();
+                        loadingUsersList();
+
+                        do {
+                            TimeUnit.MILLISECONDS.sleep(10);
+                        } while (!App.getQiwiUsersListCreated());
+
                         break;
+
                     case App.CALL_FROM_BALANCES_LIST:
-                        mLoadingBalancesTask = new LoadingBalancesTask();
-                        mLoadingBalancesTask.execute();
+                        loadingBalancesList();
+
+                        do {
+                            TimeUnit.MILLISECONDS.sleep(10);
+                        } while (!App.getQiwiUsersBalancesListCreated());
+
                         break;
+
                     case App.CALL_FROM_BTN_USERS_LIST:
-                        mExchangeUsersTask = new ExchangeUsersTask();
-                        mExchangeUsersTask.execute();
+                        exchengeUsersList();
+
+                        do {
+                            TimeUnit.MILLISECONDS.sleep(10);
+                        } while (!App.getQiwiUsersListCreated());
+
                         break;
+
                     case App.CALL_FROM_BTN_BALANCES_LIST:
-                        mExchangeBalancesTask = new ExchangeBalancesTask();
-                        mExchangeBalancesTask.execute();
+                        exchengeBakancesList();
+
+                        do {
+                            TimeUnit.MILLISECONDS.sleep(10);
+                        } while (!App.getQiwiUsersBalancesListCreated());
+
                         break;
+
                     default:
                         break;
                 }
                 break;
             case App.SERV_VERSION_MESS_FRAG:
-                mMessageTask = new MessageTask();
-                mMessageTask.execute();
+                showMessage();
                 break;
             default:
                 break;
         }
+    }
 
+    public void loadingUsersList() {
+
+        mLoadingUsersTask = new LoadingUsersTask();
+        mLoadingUsersTask.execute();
+    }
+
+    public void exchengeUsersList() {
+
+        mExchangeUsersTask = new ExchangeUsersTask();
+        mExchangeUsersTask.execute();
+    }
+
+    public void loadingBalancesList() {
+
+        mLoadingBalancesTask = new LoadingBalancesTask();
+        mLoadingBalancesTask.execute();
+    }
+
+    public void exchengeBakancesList() {
+
+        mExchangeBalancesTask = new ExchangeBalancesTask();
+        mExchangeBalancesTask.execute();
+    }
+
+    public void showMessage() {
+
+        mMessageTask = new MessageTask();
+        mMessageTask.execute();
     }
 
     public List<QiwiUsers> createListQiwiUsers() throws DBCursorIsNullException {
@@ -156,8 +209,8 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
 
                 String tMsg = App.getApp().getString(R.string.error_in_the_method_on_click_msg_btn_of_service_presenter);
 
-                int fragmentsNumber = App.getServicesArguments().getInt(App.FRAG_LAY_NUMBER, R.id.flPrimFragment);
-                int callFrom = App.getServicesArguments().getInt(App.CALL_FROM, App.CALL_FROM_USERS_LIST);
+                int fragmentsNumber = mArgs.getInt(App.FRAG_LAY_NUMBER, R.id.flPrimFragment);
+                int callFrom = mArgs.getInt(App.CALL_FROM, App.CALL_FROM_USERS_LIST);
 
                 switch (v.getId()) {
 
@@ -171,8 +224,7 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
                                     App.setNextPrimUsedFragmentsNumber(App.LOADING_FRAGMENT_NUMBER);
                                 } catch (IllegalArgumentException e) {
                                     tMsg += (" " + e.getMessage());
-                                    Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
-                                    throw new IOError(e);
+                                    throw new IllegalArgumentException(tMsg);
                                 }
                             } else {
 
@@ -180,8 +232,7 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
                                     App.setNextSecondUsedFragmentsNumber(App.LOADING_FRAGMENT_NUMBER);
                                 } catch (IllegalArgumentException e) {
                                     tMsg += (" " + e.getMessage());
-                                    Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
-                                    throw new IOError(e);
+                                    throw new IllegalArgumentException(tMsg);
                                 }
                             }
                             getViewState().showCallingScreen();
@@ -197,17 +248,15 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
                                 App.setNextSecondUsedFragmentsNumber(App.BALANCES_FRAGMENT_NUMBER);
                             } catch (IllegalArgumentException e) {
                                 tMsg += (" " + e.getMessage());
-                                Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
-                                throw new IOError(e);
+                                throw new IllegalArgumentException(tMsg);
                             }
-                        } else if (callFrom == App.CALL_FROM_USERS_LIST){
+                        } else if (callFrom == App.CALL_FROM_USERS_LIST) {
 
                             try {
                                 App.setNextPrimUsedFragmentsNumber(App.USERS_FRAGMENT_NUMBER);
                             } catch (IllegalArgumentException e) {
                                 tMsg += (" " + e.getMessage());
-                                Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
-                                throw new IOError(e);
+                                throw new IllegalArgumentException(tMsg);
                             }
                         } else {
 
@@ -215,8 +264,7 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
                                 App.setNextPrimUsedFragmentsNumber(App.BALANCES_FRAGMENT_NUMBER);
                             } catch (IllegalArgumentException e) {
                                 tMsg += (" " + e.getMessage());
-                                Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
-                                throw new IOError(e);
+                                throw new IllegalArgumentException(tMsg);
                             }
                         }
                         getViewState().showCallingScreen();
@@ -229,7 +277,6 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
     }
 
     /**
-     *
      * @param fragmentVersion - может принимать значения:
      *                        USERS_FRAGMENT_NUMBER = 0,
      *                        BALANCES_FRAGMENT_NUMBER = 1,
@@ -237,6 +284,14 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
      *                        MESSAGE_FRAGMENT_NUMBER = 3.
      */
     private void setUsedFragmentVersion(final int fragmentVersion) {
+
+        String tMsg = App.getApp().getString(R.string.error_in_the_method_set_used_fragment_version_of_service_presenter);
+        try {
+            App.validationParameterFragmentsNuber(fragmentVersion);
+        } catch (IllegalArgumentException e) {
+            tMsg += (" " + e.getMessage());
+            throw new IOError(new IllegalArgumentException(tMsg));
+        }
 
         switch (mArgs.getInt(App.CALL_FROM)) {
 
@@ -257,6 +312,160 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
             default:
                 break;
         }
+    }
+
+    private List<QiwiUsersBalances> responseHandler(JsonQiwisUsersBalances responsesBody) {
+
+        App.setQiwiUsersBalancesListCreated(false);
+        List<QiwiUsersBalances> result = new ArrayList<>();
+
+        int resultCode = responsesBody.getResultCode();
+
+        if (resultCode == 0){
+
+            for (Balance balance :
+                    responsesBody.getBalances()) {
+                result.add(new QiwiUsersBalances(balance.getCurrency(), balance.getAmount()));
+            }
+            App.setQiwiUsersBalancesListCreated(true);
+        } else {
+            App.getDequeMsg().pushMsg(
+                    "result code: " + resultCode);
+        }
+
+        return result;
+    }
+
+private class LoadingUsersTask extends AsyncTask<Void, Void, String> {
+
+    @Override
+    protected String doInBackground(Void... params) {
+
+        String msg = "";
+        Map<String, ControllerDB> allConrollersBDs = App.getManagerControllerDB().getAllControllerDBs();
+        ControllerDB controllerDB = allConrollersBDs.get(App.getPrimDbName());
+        Response<JsonQiwisUsers> response = null;
+        try {
+            response = ControllerAPI.getAPI().getUsers().execute();
+            controllerDB.downloadData(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            App.getDequeMsg().pushMsg(e.getMessage());
+        }
+
+        App.setQiwiUsersList(createListQiwiUsers());
+        try {
+            if (App.getQiwiUsersList() == null) {
+                msg = App.getApp().getString(R.string.the_dataset_is_null);
+            }
+        } catch (DBCursorIsNullException e) {
+            e.printStackTrace();
+            msg = e.getMessage();
+        }
+        return msg;
+    }
+
+    @Override
+    protected void onPostExecute(String aMsg) {
+        super.onPostExecute(aMsg);
+
+        if (!aMsg.equals("")) {
+            Toast.makeText(App.getApp().getBaseContext(), aMsg, Toast.LENGTH_SHORT).show();
+        }
+        setUsedFragmentVersion(App.MESSAGE_FRAGMENT_NUMBER);
+        getViewState().showCallingScreen();
+    }
+}
+
+private class ExchangeUsersTask extends AsyncTask<Void, Void, String> {
+
+    @Override
+    protected String doInBackground(Void... params) {
+
+        String msg = "";
+        //onClickExcheng()
+        ControllerDB controllerDB = getControllerDB(
+                App.getPrimDbName()
+        );
+        //Создаём резервную копию БД
+        try {
+            String dbName = "copy_db";
+            App.createControllerDB(dbName);
+            ControllerDB copyControllerDB = getControllerDB(dbName);
+            copyControllerDB.openWritableDatabase();
+            try {
+                controllerDB.copyDB(dbName);
+            } catch (DBIsNotDeletedException e) {
+                e.printStackTrace();
+                msg = App.getApp().getString(R.string.error_while_backing_up_database)
+                        + e.getMessage();
+            } catch (Exception e) {
+                e.printStackTrace();
+                msg = App.getApp().getString(R.string.error_while_backing_up_database)
+                        + e.getMessage();
+            }
+            //Обновляем список
+            try {
+                App.setQiwiUsersList(createListQiwiUsers());
+                if (!App.getQiwiUsersListCreated()) {
+                    msg = App.getApp().getString(R.string.error_when_updating_database) + " " +
+                            App.getApp().getString(R.string.create_list_of_qiwis_users_is_not_performed);
+                }
+            } catch (DBCursorIsNullException e) {
+                e.printStackTrace();
+                //Восттанавливаем в случае неудачного обновления
+                try {
+                    copyControllerDB.copyDB(App.getPrimDbName());
+                } catch (DBIsNotDeletedException e1) {
+                    e1.printStackTrace();
+                    msg = App.getApp().getString(R.string.error_restoring_db_from_backup)
+                            + e1.getMessage();
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                    msg = App.getApp().getString(R.string.error_restoring_db_from_backup)
+                            + e1.getMessage();
+                }
+                App.getDequeMsg().pushMsg(
+                        App.getApp().getString(R.string.error_when_updating_database)
+                                + e.getMessage()
+                );
+            }
+        } catch (DBCursorIsNullException e) {
+            e.printStackTrace();
+            msg = App.getApp().getString(R.string.error_while_backing_up_database)
+                    + e.getMessage();
+        }
+        return msg;
+    }
+
+    @Override
+    protected void onPostExecute(String aMsg) {
+        super.onPostExecute(aMsg);
+
+        if (!aMsg.equals("")) {
+            Toast.makeText(App.getApp().getBaseContext(), aMsg, Toast.LENGTH_SHORT).show();
+        }
+        setUsedFragmentVersion(App.MESSAGE_FRAGMENT_NUMBER);
+        getViewState().showCallingScreen();
+    }
+}
+
+private class LoadingBalancesTask extends AsyncTask<Void, Void, Void> {
+
+    @Override
+    protected Void doInBackground(Void... params) {
+
+        //onLoadBalancesDataset()
+        createListQiwiUsersBalances(App.getCurUserID());
+
+        return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        setUsedFragmentVersion(App.MESSAGE_FRAGMENT_NUMBER);
+        getViewState().showCallingScreen();
     }
 
     public void createListQiwiUsersBalances(int userId) {
@@ -284,6 +493,8 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
                             App.getApp().getResources().getString(R.string.error_loading_response_from_uri) + " " +
                                     App.getApp().getResources().getString(R.string.the_dataset_is_null)
                     );
+                } else {
+                    App.setQiwiUsersBalancesListCreated(true);
                 }
             } else {
 
@@ -295,207 +506,52 @@ public class ServicePresenter extends MvpPresenter<ServiceView> {
         } else {
             App.getDequeMsg().pushMsg(
                     App.getApp().getResources().getString(R.string.error_loading_response_from_uri) + " " +
-                    App.getApp().getResources().getString(R.string.response_is_null)
+                            App.getApp().getResources().getString(R.string.response_is_null)
             );
         }
+    }
+}
 
+private class ExchangeBalancesTask extends AsyncTask<Void, Void, Void> {
+
+    @Override
+    protected Void doInBackground(Void... params) {
+
+        //onExchengBalancesDataset()
+
+        return null;
     }
 
-    private List<QiwiUsersBalances> responseHandler(JsonQiwisUsersBalances responsesBody) {
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        setUsedFragmentVersion(App.MESSAGE_FRAGMENT_NUMBER);
+        getViewState().showCallingScreen();
+    }
+}
 
-        App.setQiwiUsersBalancesListCreated(false);
-        List<QiwiUsersBalances> result = new ArrayList<>();
+private class MessageTask extends AsyncTask<Void, Void, Void> {
 
-        int resultCode = responsesBody.getResultCode();
+    @Override
+    protected Void doInBackground(Void... params) {
 
-        if (resultCode != 0) {
-            App.getDequeMsg().pushMsg(
-                    "result code: " + resultCode);
+        //onShowMessage()
+
+        return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+
+        if (mArgs.size() == 0) {
+
+            setUsedFragmentVersion(App.USERS_FRAGMENT_NUMBER);
         } else {
 
-            for (Balance balance :
-                    responsesBody.getBalances()) {
-                result.add(new QiwiUsersBalances(balance.getCurrency(), balance.getAmount()));
-            }
-            App.setQiwiUsersBalancesListCreated(true);
+            setUsedFragmentVersion(App.BALANCES_FRAGMENT_NUMBER);
         }
-
-        return result;
+        getViewState().showCallingScreen();
     }
-
-    private class LoadingUsersTask extends AsyncTask<Void, Void, String> {
-
-        @Override
-        protected String doInBackground(Void... params) {
-
-            String msg = "";
-            Map<String, ControllerDB> allConrollersBDs = App.getManagerControllerDB().getAllControllerDBs();
-            ControllerDB controllerDB = allConrollersBDs.get(App.getPrimDbName());
-            Response<JsonQiwisUsers> response = null;
-            try {
-                response = ControllerAPI.getAPI().getUsers().execute();
-                controllerDB.downloadData(response);
-            } catch (Exception e) {
-                e.printStackTrace();
-                App.getDequeMsg().pushMsg(e.getMessage());
-            }
-
-            App.setQiwiUsersList(createListQiwiUsers());
-            try {
-                if (App.getQiwiUsersList() == null) {
-                    msg = App.getApp().getString(R.string.the_dataset_is_null);
-                }
-            } catch (DBCursorIsNullException e) {
-                e.printStackTrace();
-                msg = e.getMessage();
-            }
-            return msg;
-        }
-
-        @Override
-        protected void onPostExecute(String aMsg) {
-            super.onPostExecute(aMsg);
-
-            if (!aMsg.equals("")) {
-                Toast.makeText(App.getApp().getBaseContext(), aMsg, Toast.LENGTH_SHORT).show();
-            }
-            setUsedFragmentVersion(App.MESSAGE_FRAGMENT_NUMBER);
-            getViewState().showCallingScreen();
-        }
-    }
-
-    private class ExchangeUsersTask extends AsyncTask<Void, Void, String> {
-
-        @Override
-        protected String doInBackground(Void... params) {
-
-            String msg = "";
-            //onClickExcheng()
-            ControllerDB controllerDB = getControllerDB(
-                    App.getPrimDbName()
-            );
-            //Создаём резервную копию БД
-            try {
-                String dbName = "copy_db";
-                App.createControllerDB(dbName);
-                ControllerDB copyControllerDB = getControllerDB(dbName);
-                copyControllerDB.openWritableDatabase();
-                try {
-                    controllerDB.copyDB(dbName);
-                } catch (DBIsNotDeletedException e) {
-                    e.printStackTrace();
-                    msg = App.getApp().getString(R.string.error_while_backing_up_database)
-                                    + e.getMessage();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    msg = App.getApp().getString(R.string.error_while_backing_up_database)
-                                    + e.getMessage();
-                }
-                //Обновляем список
-                try {
-                    App.setQiwiUsersList(createListQiwiUsers());
-                    if (!App.getQiwiUsersListCreated()) {
-                        msg = App.getApp().getString(R.string.error_when_updating_database) + " " +
-                                        App.getApp().getString(R.string.create_list_of_qiwis_users_is_not_performed);
-                    }
-                } catch (DBCursorIsNullException e) {
-                    e.printStackTrace();
-                    //Восттанавливаем в случае неудачного обновления
-                    try {
-                        copyControllerDB.copyDB(App.getPrimDbName());
-                    } catch (DBIsNotDeletedException e1) {
-                        e1.printStackTrace();
-                        msg = App.getApp().getString(R.string.error_restoring_db_from_backup)
-                                        + e1.getMessage();
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                        msg = App.getApp().getString(R.string.error_restoring_db_from_backup)
-                                        + e1.getMessage();
-                    }
-                    App.getDequeMsg().pushMsg(
-                            App.getApp().getString(R.string.error_when_updating_database)
-                                    + e.getMessage()
-                    );
-                }
-            } catch (DBCursorIsNullException e) {
-                e.printStackTrace();
-                msg = App.getApp().getString(R.string.error_while_backing_up_database)
-                                + e.getMessage();
-            }
-            return msg;
-        }
-
-        @Override
-        protected void onPostExecute(String aMsg) {
-            super.onPostExecute(aMsg);
-
-            if (!aMsg.equals("")) {
-                Toast.makeText(App.getApp().getBaseContext(), aMsg, Toast.LENGTH_SHORT).show();
-            }
-            setUsedFragmentVersion(App.MESSAGE_FRAGMENT_NUMBER);
-            getViewState().showCallingScreen();
-        }
-    }
-
-    private class LoadingBalancesTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            //onLoadBalancesDataset()
-            createListQiwiUsersBalances(App.getCurUserID());
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            setUsedFragmentVersion(App.MESSAGE_FRAGMENT_NUMBER);
-            getViewState().showCallingScreen();
-        }
-    }
-
-    private class ExchangeBalancesTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            //onExchengBalancesDataset()
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            setUsedFragmentVersion(App.MESSAGE_FRAGMENT_NUMBER);
-            getViewState().showCallingScreen();
-        }
-    }
-
-    private class MessageTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            //onShowMessage()
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-
-            if (App.getRecyclersArguments() == null) {
-
-                    setUsedFragmentVersion(App.USERS_FRAGMENT_NUMBER);
-            } else {
-
-                setUsedFragmentVersion(App.BALANCES_FRAGMENT_NUMBER);
-            }
-            getViewState().showCallingScreen();
-        }
-    }
+}
 }

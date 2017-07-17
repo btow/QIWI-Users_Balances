@@ -1,5 +1,6 @@
 package com.example.samsung.qiwi_users_balances.ui.fragment.recycler;
 
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,9 +28,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static com.example.samsung.qiwi_users_balances.R.id.flPrimFragment;
+import static com.example.samsung.qiwi_users_balances.R.id.flSecFragment;
 
 public class RecyclerListFragment extends MvpAppCompatFragment implements RecyclerListView {
+
     public static final String TAG = "RecyclerListFragment";
+
     @InjectPresenter
     RecyclerListPresenter mRecyclerListPresenter;
 
@@ -86,7 +90,8 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
         RecyclerListFragment fragment = new RecyclerListFragment();
 
         Bundle args = new Bundle();
-        App.setRecyclersArguments(args);
+
+        App.setRecyclersArguments(App.USERS_FRAGMENT_NUMBER, args);
         fragment.setArguments(args);
 
         return fragment;
@@ -96,10 +101,26 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
         RecyclerListFragment fragment = new RecyclerListFragment();
 
         Bundle args = new Bundle();
+        String excMsg = App.getApp().getString(R.string.error_in_the_method_new_instance_with_parameter_of_recycler_list_fragment);
         args.putInt(App.USER_ID, userId);
+
+        if (App.getUsedTwoFragmentLayout()) {
+
+            args.putInt(App.FRAG_LAY_NUMBER, R.id.flSecFragment);
+        } else {
+
+            args.putInt(App.FRAG_LAY_NUMBER, R.id.flPrimFragment);
+        }
+        args.putInt(App.RECYCL_VERSION, App.RECYCL_VERSION_FRAG);
         App.setCurUserID(userId);
         fragment.setArguments(args);
-        App.setRecyclersArguments(args);
+        try {
+            App.setRecyclersArguments(App.BALANCES_FRAGMENT_NUMBER, args);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            excMsg += (" " + e.getMessage());
+            throw new IOError(new IllegalArgumentException(excMsg));
+        }
 
         return fragment;
     }
@@ -137,6 +158,7 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
 
             ListQiwiUsersAdapter listQiwiUsersAdapter =
                     new ListQiwiUsersAdapter(mRecyclerListPresenter.getQiwiUsersListDataset());
+
             listQiwiUsersAdapter.SetOnItemClickListener(new ListQiwiUsersAdapter.OnItemClickListener() {
 
                 @Override
@@ -146,12 +168,31 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
                     Toast.makeText(view.getContext(), mMsg, Toast.LENGTH_SHORT).show();
 
                     mUserID = mRecyclerListPresenter.getQiwiUsersListDataset().get(position).getId();
-                    App.getRecyclersArguments().putInt(App.USER_ID, mUserID);
-                    Bundle args = new Bundle();
                     App.setCurUserID(mUserID);
-                    args.putInt(App.USER_ID, App.getCurUserID());
-                    args.putInt(App.FRAG_LAY_NUMBER, flPrimFragment);
-                    args.putInt(App.CALL_FROM, App.CALL_FROM_USERS_LIST);
+
+                    Bundle args = new Bundle();
+                    args.putInt(App.USER_ID, mUserID);
+
+                    if (App.getUsedTwoFragmentLayout()) {
+
+                        args.putInt(App.FRAG_LAY_NUMBER, flSecFragment);
+                    } else {
+
+                        args.putInt(App.FRAG_LAY_NUMBER, flPrimFragment);
+                    }
+                    args.putInt(App.CALL_FROM, App.CALL_FROM_BALANCES_LIST);
+                    args.putInt(App.SERV_VERSION, App.SERV_VERSION_LOAD_FRAG);
+
+                    String excMsg = getString(R.string.error_in_the_method_on_item_click_of_interface_on_item_click_listener_in_method_on_create_view_of_recycler_list_fragment);
+                    try {
+
+                        App.setServicesArguments(App.LOADING_FRAGMENT_NUMBER, args);
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
+                        excMsg += e.getMessage();
+                        throw new IllegalArgumentException(excMsg);
+                    }
+
                     showLoadFrag(args);
                     //Обновить экран
                     showUsersBalances(mUserID);
@@ -175,17 +216,12 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
             App.setCurUserID(mUserID);
         }
 
-//        ButterKnife.bind(this, view);
-
-//        if (mDualPlane) {
-//            showUsersBalances(mUserID);
-//        }
     }
 
     @Override
     public void showLoadFrag(Bundle args) {
 
-        openServiceFragment(args);
+        openServiceFragment(App.LOADING_FRAGMENT_NUMBER, args);
     }
 
     @Override
@@ -194,14 +230,28 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
         if (App.getDequeMsg().isEmpty()) {
             return;
         } else {
-            openServiceFragment(args);
+            openServiceFragment(App.MESSAGE_FRAGMENT_NUMBER, args);
         }
     }
 
-    private void openServiceFragment(Bundle args) {
+    private void openServiceFragment(final int fragmentsNumber, Bundle args) {
 
-        // Могут быть значения SERV_VERSION_MESS_FRAG или SERV_VERSION_LOAD_FRAG
+        String excMsg = App.getApp().getString(R.string.error_in_the_method_open_service_fragment_of_recycler_list_fragment);
+        try {
+            App.setServicesArguments(fragmentsNumber, args);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            excMsg += (" " + e.getMessage());
+            throw new IllegalArgumentException(excMsg);
+        }
+
         int fragmentsVersion = args.getInt(App.SERV_VERSION);
+        // Могут быть значения SERV_VERSION_MESS_FRAG или SERV_VERSION_LOAD_FRAG
+        if (fragmentsVersion != App.SERV_VERSION_MESS_FRAG && fragmentsVersion != App.SERV_VERSION_LOAD_FRAG) {
+            throw new IllegalStateException(excMsg + " parameter \"fragmentsVersion\" isn't valid: "
+                    + "needs to be " + App.SERV_VERSION_MESS_FRAG + " or " + App.SERV_VERSION_LOAD_FRAG
+                    + ", not " + fragmentsVersion);
+        }
 
         ServiceFragment serviceFragment = null;
         try {
@@ -209,42 +259,47 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
         } catch (ClassCastException e) {
             e.printStackTrace();
         }
+        android.support.v4.app.FragmentTransaction fragmentTransaction = App.getFragmentManager().beginTransaction();
+
         if (serviceFragment == null) {
 
             serviceFragment = ServiceFragment.newInstance(args);
+            fragmentTransaction.add(fragmentsVersion, serviceFragment);
+        } else {
+
+            fragmentTransaction.replace(fragmentsVersion, serviceFragment);
         }
-        App.getFragmentManager().beginTransaction().replace(fragmentsVersion, serviceFragment).commit();
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
 
     @Override
     public void showUsersBalances(int userId) {
 
         String tMsg = App.getApp().getString(
-                R.string.error_in_the_method_show_users_balances_of_recycler_list_fragment)
-                ;
+                R.string.error_in_the_method_show_users_balances_of_recycler_list_fragment);
 
         if (mUserID != userId) {
             throw new IOError(
                     new IllegalArgumentException(
-                    tMsg += "The values \"mUsweID\" != \"userId\": " + mUserID + " != " + userId
+                            tMsg + "The values \"mUsweID\" != \"userId\": " + mUserID + " != " + userId
                     )
             );
         } else if (mUserID != App.getCurUserID()) {
             throw new IOError(
                     new IllegalArgumentException(
-                            tMsg += "The values \"mUsweID\" != \"mCurUserID\": " + mUserID + " != " + App.getCurUserID()
+                            tMsg + "The values \"mUsweID\" != \"mCurUserID\": " + mUserID + " != " + App.getCurUserID()
                     )
             );
         }
 
-        int fragmentsVersion = getArguments().getInt(App.FRAG_LAY_NUMBER,  R.id.flPrimFragment);
+        int fragmentsVersion = getArguments().getInt(App.FRAG_LAY_NUMBER, R.id.flPrimFragment);
 
         try {
             App.setNextPrimUsedFragmentsNumber(App.BALANCES_FRAGMENT_NUMBER);
         } catch (IllegalArgumentException e) {
             tMsg += (" " + e.getMessage());
-            Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
-            throw new IOError(e);
+            throw new IllegalArgumentException(tMsg);
         }
         RecyclerListFragment recyclerListFragment = null;
         try {

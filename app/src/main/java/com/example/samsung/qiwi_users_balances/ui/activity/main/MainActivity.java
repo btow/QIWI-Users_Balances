@@ -1,10 +1,10 @@
 package com.example.samsung.qiwi_users_balances.ui.activity.main;
 
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
-import android.widget.Toast;
 
 import com.arellomobile.mvp.MvpAppCompatActivity;
 import com.example.samsung.qiwi_users_balances.R;
@@ -15,8 +15,6 @@ import com.example.samsung.qiwi_users_balances.presentation.presenter.main.MainP
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.example.samsung.qiwi_users_balances.ui.fragment.ServiceFragment;
 import com.example.samsung.qiwi_users_balances.ui.fragment.recycler.RecyclerListFragment;
-
-import java.io.IOError;
 
 import static com.example.samsung.qiwi_users_balances.R.id.flPrimFragment;
 import static com.example.samsung.qiwi_users_balances.R.id.flSecFragment;
@@ -60,8 +58,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
             App.setNextPrimUsedFragmentsNumber(App.LOADING_FRAGMENT_NUMBER);
         } catch (IllegalArgumentException e) {
             tMsg += (" " + e.getMessage());
-            Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
-            throw new IOError(e);
+            throw new IllegalArgumentException(tMsg);
         }
         mMainPresenter.selectUsedFragmentsType(flPrimFragment);
     }
@@ -106,6 +103,15 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
     @Override
     public void showLoadingFragment(Bundle args) {
 
+        String excMsg = App.getApp().getString(R.string.error_in_the_method_show_loading_fragment_of_main_activity);
+        try {
+            App.setServicesArguments(App.LOADING_FRAGMENT_NUMBER, args);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            excMsg += (" " + e.getMessage());
+            throw new IllegalArgumentException(excMsg);
+        }
+
         ServiceFragment loading = null;
         int fragmentLayoutsNumber = args.getInt(App.FRAG_LAY_NUMBER);
         try {
@@ -114,17 +120,30 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
             e.printStackTrace();
         }
 
+        android.support.v4.app.FragmentTransaction fragmentTransaction = App.getFragmentManager().beginTransaction();
+
         if (loading == null) {
             loading = ServiceFragment.newInstance(args);
-            App.getFragmentManager().beginTransaction().add(fragmentLayoutsNumber, loading).commit();
+            fragmentTransaction.add(fragmentLayoutsNumber, loading);
         } else {
 
-            App.getFragmentManager().beginTransaction().replace(fragmentLayoutsNumber, loading).commit();
+            fragmentTransaction.replace(fragmentLayoutsNumber, loading);
         }
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
 
     @Override
     public void showMessageFragment(Bundle args) {
+
+        String excMsg = App.getApp().getString(R.string.error_in_the_method_show_message_fragment_of_main_activity);
+        try {
+            App.setServicesArguments(App.MESSAGE_FRAGMENT_NUMBER, args);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            excMsg += (" " + e.getMessage());
+            throw new IllegalArgumentException(excMsg);
+        }
 
         ServiceFragment messag = null;
         try {

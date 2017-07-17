@@ -17,7 +17,7 @@ public class App extends Application {
             RECYCL_VERSION = "recycl_version",
             SERV_VERSION = "serv_version",
             FRAG_LAY_NUMBER = "frag_lay_number",
-            FRAGMENT_NUMBER = "frag_lay_number",
+            FRAGMENT_NUMBER = "fragment_number",
             CALL_FROM = "call_from";
 
     public static final int
@@ -103,14 +103,15 @@ public class App extends Application {
         mUsedTwoFragmentLayout = usedTwoFragmentLayout;
     }
 
-    private static void validationParameterFragmentsNuber(int fragmentsNumber) throws IllegalArgumentException {
+    public static void validationParameterFragmentsNuber(int fragmentsNumber) throws IllegalArgumentException {
 
-        if (fragmentsNumber != USERS_FRAGMENT_NUMBER
-                || fragmentsNumber != BALANCES_FRAGMENT_NUMBER
-                || fragmentsNumber != LOADING_FRAGMENT_NUMBER
-                || fragmentsNumber != MESSAGE_FRAGMENT_NUMBER) {
-            throw new IllegalArgumentException("Attempt to pass an invalid parameter [" + fragmentsNumber);
+        if (fragmentsNumber == USERS_FRAGMENT_NUMBER
+                || fragmentsNumber == BALANCES_FRAGMENT_NUMBER
+                || fragmentsNumber == LOADING_FRAGMENT_NUMBER
+                || fragmentsNumber == MESSAGE_FRAGMENT_NUMBER) {
+            return;
         }
+        throw new IllegalArgumentException("Attempt to pass an invalid parameter [" + fragmentsNumber);
     }
 
     public static int getNextPrimUsedFragmentsNumber() {
@@ -140,10 +141,10 @@ public class App extends Application {
 
     /**
      * @param nextSecondUsedFragmentsNumber - ожидается одно из возможных значений:
-     *                                    USERS_FRAGMENT_NUMBER = 0,
-     *                                    BALANCES_FRAGMENT_NUMBER = 1,
-     *                                    LOADING_FRAGMENT_NUMBER = 2,
-     *                                    MESSAGE_FRAGMENT_NUMBER = 3.
+     *                                      USERS_FRAGMENT_NUMBER = 0,
+     *                                      BALANCES_FRAGMENT_NUMBER = 1,
+     *                                      LOADING_FRAGMENT_NUMBER = 2,
+     *                                      MESSAGE_FRAGMENT_NUMBER = 3.
      */
     public static void setNextSecondUsedFragmentsNumber(final int nextSecondUsedFragmentsNumber) throws IllegalArgumentException {
 
@@ -155,12 +156,91 @@ public class App extends Application {
         mNextSecondUsedFragmentsNumber = nextSecondUsedFragmentsNumber;
     }
 
-    public static Bundle getServicesArguments() {
-        return mServicesArguments;
+    /**
+     * Извлекает список аргументов соответствующего параметру фрагмента, упакованный в экземпляр
+     * класса Bundle.
+     *
+     * @param fragmentsNumber - должен содержать одно из двух значений:
+     *                        LOADING_FRAGMENT_NUMBER = 2,
+     *                        MESSAGE_FRAGMENT_NUMBER = 3.
+     * @return
+     */
+    public static Bundle getServicesArguments(final int fragmentsNumber) throws IllegalArgumentException {
+
+        String excMsg = "Error in the method App.getServicesArguments(): ";
+
+        if (fragmentsNumber != LOADING_FRAGMENT_NUMBER && fragmentsNumber != MESSAGE_FRAGMENT_NUMBER) {
+
+            excMsg += "value of parameter \"fragmentNumber\" is not illegal";
+            throw new IllegalArgumentException(excMsg);
+        }
+
+        return mServicesArguments.getBundle(FRAGMENT_NUMBER + fragmentsNumber);
     }
 
-    public static void setServicesArguments(Bundle arguments) {
-        mServicesArguments = arguments;
+    /**
+     * Помещает в экземпляр класса Bundle множество аргументов для класса ServiceFragment,
+     * также упакованное в экземпляр класса Bundle, и помеченное одним из значений парметра
+     *
+     * @param fragmentsNumber   - должен содержать одно из двух значений:
+     *                         LOADING_FRAGMENT_NUMBER = 2,
+     *                         MESSAGE_FRAGMENT_NUMBER = 3.
+     * @param serviceArguments - должен содержать все или все, кроме USER_ID, из следующих меткок:
+     *                         USER_ID = "user_id",
+     *                         SERV_VERSION = "serv_version",
+     *                         FRAG_LAY_NUMBER = "frag_lay_number",
+     *                         CALL_FROM = "call_from".
+     * @<code>fragmentNumber</code>.
+     */
+    public static void setServicesArguments(final int fragmentsNumber, Bundle serviceArguments) throws IllegalArgumentException {
+
+        boolean isException = false;
+        String excMsg = "Error in the method App.setServicesArguments(): ";
+        int excCount = 0;
+
+        if (fragmentsNumber != LOADING_FRAGMENT_NUMBER && fragmentsNumber != MESSAGE_FRAGMENT_NUMBER) {
+
+            excMsg += "value of parameter \"fragmentsNumber\" is not illegal";
+            throw new IllegalArgumentException(excMsg);
+        }
+
+        if (serviceArguments.size() == 0) {
+
+            excMsg += ("all nessesery parameters are absent.");
+            isException = true;
+
+        } else if (serviceArguments.size() < 4) {
+
+            if (!serviceArguments.containsKey(SERV_VERSION)) {
+                excMsg += ("nessesery parameter \"" + SERV_VERSION + "\" is absent; ");
+                isException = true;
+                excCount++;
+            }
+            if (!serviceArguments.containsKey(FRAG_LAY_NUMBER)) {
+
+                if (excCount > 0) {
+                    excMsg += "\n";
+                }
+                excMsg += ("nessesery parameter \"" + FRAG_LAY_NUMBER + "\" is absent; ");
+                isException = true;
+                excCount++;
+            }
+            if (!serviceArguments.containsKey(CALL_FROM)) {
+
+                if (excCount > 0) {
+                    excMsg += "\n";
+                }
+                excMsg += ("nessesery parameter \"" + CALL_FROM + "\" is absent; ");
+                isException = true;
+            }
+        } else if (serviceArguments.size() == 4 && !serviceArguments.containsKey(USER_ID)) {
+            excMsg += ("nessesery parameter \"" + USER_ID + "\" is absent.");
+            isException = true;
+        }
+
+        if (isException) throw new IllegalArgumentException(excMsg);
+
+        mServicesArguments.putBundle(FRAGMENT_NUMBER + fragmentsNumber, serviceArguments);
     }
 
     public static int getCurUserID() {
@@ -171,12 +251,76 @@ public class App extends Application {
         App.mCurUserID = curUserID;
     }
 
-    public static Bundle getRecyclersArguments() {
-        return mRecyclersArguments;
+    /**
+     * Извлекает список аргументов соответствующего параметру фрагмента, упакованный в экземпляр
+     * класса Bundle.
+     *
+     * @param fragmentsNumber - должен содержать одно из двух значений:
+     *                           USERS_FRAGMENT_NUMBER = 0,
+     *                           BALANCES_FRAGMENT_NUMBER = 1.
+     * @return
+     */
+    public static Bundle getRecyclersArguments(final int fragmentsNumber) {
+
+        String excMsg = "Error in the method App.getRecyclersArguments(): ";
+
+        if (fragmentsNumber != USERS_FRAGMENT_NUMBER && fragmentsNumber != BALANCES_FRAGMENT_NUMBER) {
+
+            excMsg += "value of parameter \"fragmentsNumber\" is not illegal";
+            throw new IllegalArgumentException(excMsg);
+        }
+
+        return mServicesArguments.getBundle(FRAGMENT_NUMBER + fragmentsNumber);
     }
 
-    public static void setRecyclersArguments(Bundle recyclersArguments) {
-        mRecyclersArguments = recyclersArguments;
+    /**
+     * Помещает в экземпляр класса Bundle множество аргументов для класса RecyclerListFragment,
+     * также упакованное в экземпляр класса Bundle, и помеченное одним из значений парметра
+     *
+     * @param fragmentsNumber     - должен содержать одно из двух значений:
+     *                           USERS_FRAGMENT_NUMBER = 0,
+     *                           BALANCES_FRAGMENT_NUMBER = 1.
+     * @param recyclersArguments - может содержать все или ниодного из следующих меток:
+     *                           USER_ID = "user_id",
+     *                           RECYCL_VERSION = "recycl_version",
+     *                           FRAG_LAY_NUMBER = "frag_lay_number".
+     * @<code>fragmentNumber</code>.
+     */
+    public static void setRecyclersArguments(final int fragmentsNumber, Bundle recyclersArguments) throws IllegalArgumentException {
+
+        boolean isException = false;
+        String excMsg = "Error in the method App.setRecyclersArguments(): ";
+        int excCount = 0;
+
+        if (recyclersArguments.size() > 0 && recyclersArguments.size() < 3) {
+
+            if (!recyclersArguments.containsKey(RECYCL_VERSION)) {
+                excMsg += ("nessesery parameter \"" + RECYCL_VERSION + "\" is absent; ");
+                isException = true;
+                excCount++;
+            }
+            if (!recyclersArguments.containsKey(FRAG_LAY_NUMBER)) {
+
+                if (excCount > 0) {
+                    excMsg += "\n";
+                }
+                excMsg += ("nessesery parameter \"" + FRAG_LAY_NUMBER + "\" is absent; ");
+                isException = true;
+                excCount++;
+            }
+            if (!recyclersArguments.containsKey(USER_ID)) {
+
+                if (excCount > 0) {
+                    excMsg += "\n";
+                }
+                excMsg += ("nessesery parameter \"" + USER_ID + "\" is absent; ");
+                isException = true;
+            }
+        }
+
+        if (isException) throw new IllegalArgumentException(excMsg);
+
+        mRecyclersArguments.putBundle(FRAGMENT_NUMBER + fragmentsNumber, recyclersArguments);
     }
 
     public static List<QiwiUsersBalances> getQiwiUsersBalancesList() {
@@ -209,5 +353,7 @@ public class App extends Application {
         mQiwiUsersListCreated = false;
         mUsedTwoFragmentLayout =
                 (getApp().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == 4;
+        mRecyclersArguments = new Bundle();
+        mServicesArguments = new Bundle();
     }
 }

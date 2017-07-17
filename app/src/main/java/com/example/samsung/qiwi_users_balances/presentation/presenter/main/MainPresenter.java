@@ -3,13 +3,12 @@ package com.example.samsung.qiwi_users_balances.presentation.presenter.main;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.widget.Toast;
 
+import com.arellomobile.mvp.InjectViewState;
+import com.arellomobile.mvp.MvpPresenter;
 import com.example.samsung.qiwi_users_balances.R;
 import com.example.samsung.qiwi_users_balances.model.App;
 import com.example.samsung.qiwi_users_balances.presentation.view.main.MainView;
-import com.arellomobile.mvp.InjectViewState;
-import com.arellomobile.mvp.MvpPresenter;
 
 import static com.example.samsung.qiwi_users_balances.R.id.flPrimFragment;
 
@@ -31,8 +30,7 @@ public class MainPresenter extends MvpPresenter<MainView> {
                         App.setNextSecondUsedFragmentsNumber(App.LOADING_FRAGMENT_NUMBER);
                     } catch (IllegalArgumentException e) {
                         tMsg += e.getMessage();
-                        Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
-                        e.printStackTrace();
+                        throw new IllegalArgumentException(tMsg);
                     }
                     selectUsedFragmentsType(R.id.flSecFragment);
                 }
@@ -41,8 +39,7 @@ public class MainPresenter extends MvpPresenter<MainView> {
                 protected Void doInBackground(Void... params) {
                     return null;
                 }
-            };
-            twoFragmentLayoutTask.execute();
+            }.execute();
         }
 
     }
@@ -51,32 +48,25 @@ public class MainPresenter extends MvpPresenter<MainView> {
         getViewState().showUsersFragment();
     }
 
-    public void showBalancesFragment(final Bundle args) {
-//        getViewState().setTypeActivityLayout();
+    public void showBalancesFragment(Bundle args) {
         getViewState().showBalancesFragment(args);
     }
 
-    public void showLoadFragment(final Bundle args) {
+    public void showLoadFragment(Bundle args) {
         getViewState().showLoadingFragment(args);
     }
 
-    public void showMsgFragment(final Bundle args) {
+    public void showMsgFragment(Bundle args) {
         getViewState().showMessageFragment(args);
     }
 
     public void selectUsedFragmentsType(final int frameLayout) {
 
-        Bundle args = new Bundle();
+        Bundle fragmentsArgs = new Bundle();
 
         int usedFragmentsVersion = 0;
 
-        if (frameLayout == flPrimFragment) {
-
-            usedFragmentsVersion = App.getNextPrimUsedFragmentsNumber();
-        } else {
-
-            usedFragmentsVersion = App.getNextSecondUsedFragmentsNumber();
-        }
+        usedFragmentsVersion = frameLayout == flPrimFragment ? App.getNextPrimUsedFragmentsNumber() : App.getNextSecondUsedFragmentsNumber();
 
         switch (usedFragmentsVersion) {
 
@@ -84,38 +74,38 @@ public class MainPresenter extends MvpPresenter<MainView> {
                 showUsersFragment();
                 break;
             case App.BALANCES_FRAGMENT_NUMBER:
-                args.clear();
-                args.putInt(App.FRAG_LAY_NUMBER, frameLayout);
-                args.putInt(App.USER_ID, App.getCurUserID());
-                showBalancesFragment(args);
+                fragmentsArgs.clear();
+                fragmentsArgs.putInt(App.FRAG_LAY_NUMBER, frameLayout);
+                fragmentsArgs.putInt(App.USER_ID, App.getCurUserID());
+                showBalancesFragment(fragmentsArgs);
                 break;
             case App.LOADING_FRAGMENT_NUMBER:
-                args.clear();
+                fragmentsArgs.clear();
 
                 if (frameLayout == flPrimFragment) {
 
-                    args.putInt(App.CALL_FROM, App.CALL_FROM_USERS_LIST);
+                    fragmentsArgs.putInt(App.CALL_FROM, App.CALL_FROM_USERS_LIST);
                 } else {
 
-                    args.putInt(App.CALL_FROM, App.CALL_FROM_BALANCES_LIST);
+                    fragmentsArgs.putInt(App.CALL_FROM, App.CALL_FROM_BALANCES_LIST);
                 }
-                args.putInt(App.FRAG_LAY_NUMBER, frameLayout);
-                args.putInt(App.SERV_VERSION, App.SERV_VERSION_LOAD_FRAG);
-                showLoadFragment(args);
+                fragmentsArgs.putInt(App.FRAG_LAY_NUMBER, frameLayout);
+                fragmentsArgs.putInt(App.SERV_VERSION, App.SERV_VERSION_LOAD_FRAG);
+                showLoadFragment(fragmentsArgs);
                 break;
             case App.MESSAGE_FRAGMENT_NUMBER:
-                args.clear();
+                fragmentsArgs.clear();
 
                 if (frameLayout == flPrimFragment) {
 
-                    args.putInt(App.CALL_FROM, App.CALL_FROM_USERS_LIST);
+                    fragmentsArgs.putInt(App.CALL_FROM, App.CALL_FROM_USERS_LIST);
                 } else {
 
-                    args.putInt(App.CALL_FROM, App.CALL_FROM_BALANCES_LIST);
+                    fragmentsArgs.putInt(App.CALL_FROM, App.CALL_FROM_BALANCES_LIST);
                 }
-                args.putInt(App.FRAG_LAY_NUMBER, frameLayout);
-                args.putInt(App.SERV_VERSION, App.SERV_VERSION_MESS_FRAG);
-                showMsgFragment(args);
+                fragmentsArgs.putInt(App.FRAG_LAY_NUMBER, frameLayout);
+                fragmentsArgs.putInt(App.SERV_VERSION, App.SERV_VERSION_MESS_FRAG);
+                showMsgFragment(fragmentsArgs);
                 break;
             default:
                 break;

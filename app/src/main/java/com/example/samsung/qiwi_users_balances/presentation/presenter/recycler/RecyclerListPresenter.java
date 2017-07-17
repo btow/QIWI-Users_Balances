@@ -14,6 +14,10 @@ import java.util.List;
 @InjectViewState
 public class RecyclerListPresenter extends MvpPresenter<RecyclerListView> {
 
+    public RecyclerListPresenter() {
+        super();
+    }
+
     public List<QiwiUsers> getQiwiUsersListDataset() {
 
         return App.getQiwiUsersList();
@@ -25,11 +29,6 @@ public class RecyclerListPresenter extends MvpPresenter<RecyclerListView> {
     }
 
     public void onClicExcheng(Bundle args) throws Exception {
-
-        getViewState().showLoadFrag(args);
-    }
-
-    public void showProgressBar(Bundle args) {
 
         getViewState().showLoadFrag(args);
     }

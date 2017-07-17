@@ -37,10 +37,9 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
     private Button btnRepeat;
     private Button btnContinue;
 
-    public static ServiceFragment newInstance(final Bundle args) {
-        ServiceFragment fragment = new ServiceFragment();
+    public static ServiceFragment newInstance(Bundle args) {
 
-        App.setServicesArguments(args);
+        ServiceFragment fragment = new ServiceFragment();
         fragment.setArguments(args);
 
         return fragment;
@@ -50,9 +49,8 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        String tMsg = App.getApp().getString(R.string.error_in_the_method_on_create_view_of_service_fragment);
+        String excMsg = App.getApp().getString(R.string.error_in_the_method_on_create_view_of_service_fragment);
         int servicesVersion = getArguments().getInt(App.SERV_VERSION);
-        int layoutsNumber = getArguments().getInt(App.FRAG_LAY_NUMBER, R.id.flPrimFragment);
         // Inflate the layout for this fragment
         View fragmentService = inflater.inflate(servicesVersion, container, false);
 
@@ -60,47 +58,6 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
 
             pbLoading = (ProgressBar) fragmentService.findViewById(R.id.pbLoading);
             pbLoading.setIndeterminate(true);
-
-            if (getArguments().containsKey(App.USER_ID)) {
-
-                mServicePresenter.createListQiwiUsersBalances(
-                        getArguments().getInt(App.USER_ID, 0)
-                );
-
-                if (layoutsNumber == R.id.flPrimFragment) {
-                    try {
-                        App.setNextPrimUsedFragmentsNumber(App.MESSAGE_FRAGMENT_NUMBER);
-                    } catch (IllegalArgumentException e) {
-                        tMsg += (" " + e.getMessage());
-                        Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
-                        throw new IOError(e);
-                    }
-                } else {
-                    try {
-                        App.setNextSecondUsedFragmentsNumber(App.MESSAGE_FRAGMENT_NUMBER);
-                    } catch (IllegalArgumentException e) {
-                        tMsg += (" " + e.getMessage());
-                        Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
-                        throw new IOError(e);
-                    }
-                }
-            } else {
-
-                do {
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(10);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                } while (!App.getQiwiUsersListCreated());
-                try {
-                    App.setNextPrimUsedFragmentsNumber(App.MESSAGE_FRAGMENT_NUMBER);
-                } catch (IllegalArgumentException e) {
-                    tMsg += (" " + e.getMessage());
-                    Toast.makeText(App.getApp(), tMsg, Toast.LENGTH_LONG);
-                    throw new IOError(e);
-                }
-            }
 
         } else if (servicesVersion == App.SERV_VERSION_MESS_FRAG) {
 
@@ -115,6 +72,13 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
             if (!App.getDequeMsg().isEmpty()) {
                 tvMsg.setText(App.getDequeMsg().outMsg());
             }
+        }
+
+        try {
+            mServicePresenter.serviceExecute(getArguments());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), (excMsg + " " + e.getMessage()), Toast.LENGTH_SHORT).show();
         }
 
         return fragmentService;
@@ -166,11 +130,6 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
             default:
                 break;
         }
-    }
-
-    @Override
-    public void setAppArguments() {
-        App.setServicesArguments(getArguments());
     }
 
     @Override

@@ -33,8 +33,15 @@
     <string name="please_wait_loading">Please wait, loading.</string>
     <string name="error_in_the_constructor_main_presenter">Error in the constructor MainPresenter:</string>
     <string name="error_in_the_method_on_create_view_of_service_fragment">Error in the method onCreateView() of ServiceFragment:</string>
+    <string name="error_in_the_method_set_app_arguments_of_service_fragment">Error in the method setAppArguments() of ServiceFragment:</string>
+    <string name="error_in_the_method_show_loading_fragment_of_main_activity">Error in the method showLoadingFragment() of MainActivity:</string>
+    <string name="error_in_the_method_show_message_fragment_of_main_activity">Error in the method showMessageFragment() of MainActivity:</string>
+    <string name="error_in_the_method_new_instance_with_parameter_of_recycler_list_fragment">Error in the method newInstance(usrId) of RecyclerListFragment:</string>
     <string name="error_in_the_method_on_create_of_main_activity">Error in the method onCreate() of MainActivity:</string>
     <string name="error_in_the_method_show_users_balances_of_recycler_list_fragment">Error in the method showUsersBalances() of RecyclerListFragment:</string>
+    <string name="error_in_the_method_open_service_fragment_of_recycler_list_fragment">Error in the method openServiceFragment() of RecyclerListFragment:</string>
     <string name="error_in_the_method_on_click_msg_btn_of_service_presenter">Error in the method onClickMsgBtn() of ServicePresenter:</string>
+    <string name="error_in_the_method_set_used_fragment_version_of_service_presenter">Error in the method setUsedFragmentVersion() of ServicePresenter:</string>
+    <string name="error_in_the_method_on_item_click_of_interface_on_item_click_listener_in_method_on_create_view_of_recycler_list_fragment">Error in the method onItemClick() of interface OnItemClickListener in method onCreateView() of RecyclerListFragment</string>
 
 </resources>
