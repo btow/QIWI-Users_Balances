@@ -41,7 +41,6 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
     @BindView(R.id.rvList)
     android.support.v7.widget.RecyclerView rvUsers;
 
-    private boolean mDualPlane;
     private int mUserID = 0;
     private String mMsg = "";
 
@@ -124,8 +123,8 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
         return fragment;
     }
 
-    public int getUsersId() {
-        return mUserID;
+    public Bundle getRecyclerArgs() {
+        return getArguments();
     }
 
     @Nullable
