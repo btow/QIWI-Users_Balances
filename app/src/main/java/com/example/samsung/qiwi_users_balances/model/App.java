@@ -39,7 +39,8 @@ public class App extends Application {
     private static ManagerMessagersDialogs mDequeMsg;
     private static List<QiwiUsers> mQiwiUsersList;
     private static List<QiwiUsersBalances> mQiwiUsersBalancesList;
-    private static FragmentManager mFragmentManager;
+    private static FragmentManager mSupportFragmentManager;
+    private static FragmentManager mChildFragmentManager;
     private static boolean mQiwiUsersListCreated;
     private static boolean mUsedTwoFragmentLayout;
     private static int mNextPrimUsedFragmentsNumber;
@@ -49,12 +50,12 @@ public class App extends Application {
     private static Bundle mRecyclersArguments;
     private static boolean mQiwiUsersBalancesListCreated;
 
-    public static FragmentManager getFragmentManager() {
-        return mFragmentManager;
+    public static FragmentManager getSupportFragmentManager() {
+        return mSupportFragmentManager;
     }
 
-    public static void setFragmentManager(FragmentManager fragmentManager) {
-        App.mFragmentManager = fragmentManager;
+    public static void setSupportFragmentManager(FragmentManager supportFragmentManager) {
+        mSupportFragmentManager = supportFragmentManager;
     }
 
     public static void createControllerDB(final String dbName) {
@@ -337,6 +338,14 @@ public class App extends Application {
 
     public static void setQiwiUsersBalancesListCreated(boolean qiwiUsersBalancesListCreated) {
         mQiwiUsersBalancesListCreated = qiwiUsersBalancesListCreated;
+    }
+
+    public static FragmentManager getChildFragmentManager() {
+        return mChildFragmentManager;
+    }
+
+    public static void setChildFragmentManager(FragmentManager childFragmentManager) {
+        mChildFragmentManager = childFragmentManager;
     }
 
     @Override

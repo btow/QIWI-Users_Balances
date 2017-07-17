@@ -20,10 +20,6 @@ import com.example.samsung.qiwi_users_balances.presentation.presenter.ServicePre
 import com.example.samsung.qiwi_users_balances.presentation.view.ServiceView;
 import com.example.samsung.qiwi_users_balances.ui.fragment.recycler.RecyclerListFragment;
 
-import java.io.IOError;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
 public class ServiceFragment extends MvpAppCompatFragment implements ServiceView {
 
     public static final String TAG = "ServiceFragment";
@@ -49,7 +45,6 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        String excMsg = App.getApp().getString(R.string.error_in_the_method_on_create_view_of_service_fragment);
         int servicesVersion = getArguments().getInt(App.SERV_VERSION);
         // Inflate the layout for this fragment
         View fragmentService = inflater.inflate(servicesVersion, container, false);
@@ -74,13 +69,6 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
             }
         }
 
-        try {
-            mServicePresenter.serviceExecute(getArguments());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), (excMsg + " " + e.getMessage()), Toast.LENGTH_SHORT).show();
-        }
-
         return fragmentService;
     }
 
@@ -88,6 +76,14 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        String excMsg = App.getApp().getString(R.string.error_in_the_method_on_view_created_of_service_fragment);
+
+        try {
+            mServicePresenter.serviceExecute(getArguments());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), (excMsg + " " + e.getMessage()), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -95,7 +91,7 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
 
         int users_id = getArguments().getInt(App.USER_ID);
         int call_from = getArguments().getInt(App.CALL_FROM);
-        RecyclerListFragment users = null;
+        RecyclerListFragment users;
 
         switch (call_from) {
 
@@ -104,29 +100,37 @@ public class ServiceFragment extends MvpAppCompatFragment implements ServiceView
 
                 users = null;
                 try {
-                    users = (RecyclerListFragment) App.getFragmentManager().findFragmentById(R.id.flPrimFragment);
+                    users = (RecyclerListFragment) App.getSupportFragmentManager().findFragmentById(R.id.flPrimFragment);
                 } catch (ClassCastException e) {
                     e.printStackTrace();
                 }
                 if (users == null) {
                     users = RecyclerListFragment.newInstance();
                 }
-                App.getFragmentManager().beginTransaction().replace(R.id.flPrimFragment, users).commit();
+                App.getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.flPrimFragment, users)
+                        .addToBackStack(null)
+                        .commit();
                 break;
+
             case App.CALL_FROM_BALANCES_LIST:
             case App.CALL_FROM_BTN_BALANCES_LIST:
 
                 RecyclerListFragment balances = null;
                 try {
-                    balances = (RecyclerListFragment) App.getFragmentManager().findFragmentById(R.id.flSecFragment);
+                    balances = (RecyclerListFragment) App.getSupportFragmentManager().findFragmentById(R.id.flSecFragment);
                 } catch (ClassCastException e) {
                     e.printStackTrace();
                 }
                 if (balances == null) {
                     balances = RecyclerListFragment.newInstance(users_id);
                 }
-                App.getFragmentManager().beginTransaction().replace(R.id.flSecFragment, balances).commit();
+                App.getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.flSecFragment, balances)
+                        .addToBackStack(null)
+                        .commit();
                 break;
+
             default:
                 break;
         }

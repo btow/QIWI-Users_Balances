@@ -19,7 +19,7 @@ public class MainPresenter extends MvpPresenter<MainView> {
 
         if (App.getUsedTwoFragmentLayout()) {
 
-            AsyncTask<Void, Void, Void> twoFragmentLayoutTask = new AsyncTask<Void, Void, Void>() {
+            new AsyncTask<Void, Void, Void>() {
 
                 private String tMsg = App.getApp().getString(R.string.error_in_the_constructor_main_presenter);
 

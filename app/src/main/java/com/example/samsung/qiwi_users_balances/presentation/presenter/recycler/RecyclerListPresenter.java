@@ -23,11 +23,6 @@ public class RecyclerListPresenter extends MvpPresenter<RecyclerListView> {
         return App.getQiwiUsersList();
     }
 
-    public List<QiwiUsersBalances> getQiwiUsersListBalancesDataset() {
-
-        return null;
-    }
-
     public void onClicExcheng(Bundle args) throws Exception {
 
         getViewState().showLoadFrag(args);

@@ -1,6 +1,5 @@
 package com.example.samsung.qiwi_users_balances.ui.fragment.recycler;
 
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -134,6 +133,8 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                              final Bundle savedInstanceState) {
 
+        App.setChildFragmentManager(getChildFragmentManager());
+
         View fragmentRecyclerList = inflater.inflate(R.layout.fragment_recycler_list, container, false);
 
         ButterKnife.bind(this, fragmentRecyclerList);
@@ -255,22 +256,20 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
 
         ServiceFragment serviceFragment = null;
         try {
-            serviceFragment = (ServiceFragment) App.getFragmentManager().findFragmentById(fragmentsVersion);
+            serviceFragment = (ServiceFragment) App.getChildFragmentManager().findFragmentById(fragmentsVersion);
         } catch (ClassCastException e) {
             e.printStackTrace();
         }
-        android.support.v4.app.FragmentTransaction fragmentTransaction = App.getFragmentManager().beginTransaction();
 
         if (serviceFragment == null) {
 
             serviceFragment = ServiceFragment.newInstance(args);
-            fragmentTransaction.add(fragmentsVersion, serviceFragment);
-        } else {
-
-            fragmentTransaction.replace(fragmentsVersion, serviceFragment);
         }
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+
+        App.getChildFragmentManager().beginTransaction()
+                .replace(fragmentsVersion, serviceFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override
@@ -303,7 +302,7 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
         }
         RecyclerListFragment recyclerListFragment = null;
         try {
-            recyclerListFragment = (RecyclerListFragment) App.getFragmentManager().findFragmentById(fragmentsVersion);
+            recyclerListFragment = (RecyclerListFragment) App.getSupportFragmentManager().findFragmentById(fragmentsVersion);
         } catch (ClassCastException e) {
             e.printStackTrace();
         }
@@ -311,7 +310,7 @@ public class RecyclerListFragment extends MvpAppCompatFragment implements Recycl
 
             recyclerListFragment = RecyclerListFragment.newInstance(userId);
         }
-        App.getFragmentManager().beginTransaction().replace(fragmentsVersion, recyclerListFragment).commit();
+        App.getSupportFragmentManager().beginTransaction().replace(fragmentsVersion, recyclerListFragment).commit();
     }
 
     @Override

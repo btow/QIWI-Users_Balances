@@ -1,6 +1,5 @@
 package com.example.samsung.qiwi_users_balances.ui.activity.main;
 
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -45,7 +44,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
             mUserID = savedInstanceState.getInt(App.USER_ID);
             App.setCurUserID(mUserID);
         }
-        App.setFragmentManager(getSupportFragmentManager());
+        App.setSupportFragmentManager(getSupportFragmentManager());
 
         int activity_main = R.layout.activity_main;
 
@@ -75,14 +74,14 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
 
         RecyclerListFragment users = null;
         try {
-            users = (RecyclerListFragment) App.getFragmentManager().findFragmentById(flPrimFragment);
+            users = (RecyclerListFragment) App.getSupportFragmentManager().findFragmentById(flPrimFragment);
         } catch (ClassCastException e) {
             e.printStackTrace();
         }
         if (users == null) {
             users = RecyclerListFragment.newInstance();
         }
-        App.getFragmentManager().beginTransaction().replace(flPrimFragment, users).commit();
+        App.getSupportFragmentManager().beginTransaction().replace(flPrimFragment, users).commit();
     }
 
     @Override
@@ -90,14 +89,14 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
 
         RecyclerListFragment balances = null;
         try {
-            balances = (RecyclerListFragment) App.getFragmentManager().findFragmentById(flSecFragment);
+            balances = (RecyclerListFragment) App.getSupportFragmentManager().findFragmentById(flSecFragment);
         } catch (ClassCastException e) {
             e.printStackTrace();
         }
         if (balances == null) {
             balances = RecyclerListFragment.newInstance(args.getInt(App.USER_ID));
         }
-        App.getFragmentManager().beginTransaction().add(flSecFragment, balances).commit();
+        App.getSupportFragmentManager().beginTransaction().add(flSecFragment, balances).commit();
     }
 
     @Override
@@ -115,22 +114,16 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
         ServiceFragment loading = null;
         int fragmentLayoutsNumber = args.getInt(App.FRAG_LAY_NUMBER);
         try {
-            loading = (ServiceFragment) App.getFragmentManager().findFragmentById(fragmentLayoutsNumber);
+            loading = (ServiceFragment) App.getSupportFragmentManager().findFragmentById(fragmentLayoutsNumber);
         } catch (ClassCastException e) {
             e.printStackTrace();
         }
 
-        android.support.v4.app.FragmentTransaction fragmentTransaction = App.getFragmentManager().beginTransaction();
-
         if (loading == null) {
-            loading = ServiceFragment.newInstance(args);
-            fragmentTransaction.add(fragmentLayoutsNumber, loading);
-        } else {
 
-            fragmentTransaction.replace(fragmentLayoutsNumber, loading);
+            loading = ServiceFragment.newInstance(args);
         }
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        App.getSupportFragmentManager().beginTransaction().replace(fragmentLayoutsNumber, loading).commit();
     }
 
     @Override
@@ -147,7 +140,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
 
         ServiceFragment messag = null;
         try {
-            messag = (ServiceFragment) App.getFragmentManager().findFragmentById(args.getInt(App.FRAG_LAY_NUMBER));
+            messag = (ServiceFragment) App.getSupportFragmentManager().findFragmentById(args.getInt(App.FRAG_LAY_NUMBER));
         } catch (ClassCastException e) {
             e.printStackTrace();
         }
@@ -155,7 +148,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
         if (messag == null) {
             messag = ServiceFragment.newInstance(args);
         }
-        App.getFragmentManager().beginTransaction().replace(args.getInt(App.FRAG_LAY_NUMBER), messag).commit();
+        App.getSupportFragmentManager().beginTransaction().replace(args.getInt(App.FRAG_LAY_NUMBER), messag).commit();
     }
 
     @Override

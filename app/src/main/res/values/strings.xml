@@ -32,7 +32,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="please_wait_loading">Please wait, loading.</string>
     <string name="error_in_the_constructor_main_presenter">Error in the constructor MainPresenter:</string>
-    <string name="error_in_the_method_on_create_view_of_service_fragment">Error in the method onCreateView() of ServiceFragment:</string>
+    <string name="error_in_the_method_on_view_created_of_service_fragment">Error in the method onViewCreated() of ServiceFragment:</string>
     <string name="error_in_the_method_set_app_arguments_of_service_fragment">Error in the method setAppArguments() of ServiceFragment:</string>
     <string name="error_in_the_method_show_loading_fragment_of_main_activity">Error in the method showLoadingFragment() of MainActivity:</string>
     <string name="error_in_the_method_show_message_fragment_of_main_activity">Error in the method showMessageFragment() of MainActivity:</string>
